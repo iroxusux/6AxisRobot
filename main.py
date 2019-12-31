@@ -9,16 +9,17 @@ from Adafruit_Python_PCA9685 import Adafruit_PCA9685
 
 
 def Main():
-    InitializeEnvironment()  
+    controller = Controller()
+    InitializeEnvironment(controller)  
 
     
 
-def InitializeEnvironment():
+def InitializeEnvironment(controller):
     while True:
         try:
-            ok_to_run = Detecti2cModule()
+            ok_to_run = Detecti2cModule(controller)
             if ok_to_run:
-                RobotMain()
+                RobotMain(controller)
         except KeyboardInterrupt:
             print('\n')
             print('########################################')
@@ -27,27 +28,31 @@ def InitializeEnvironment():
             print('########################################')
             break
     
-    CleanUpEnvironment()
+    CleanUpEnvironment(controller)
     
     print('########################################')
     print('System Exiting.')
     print('########################################')
     
 
-def CleanUpEnvironment():
+def CleanUpEnvironment(controller):
+    try:
+        controller.i2c.unlock()
+    except ValueError:
+        pass
+    controller.i2c.deinit()
     print('########################################')
-    print('Nothing To Clean Up Yet.')
+    print('Clean Up Complete.')
     print('########################################')
     
     
-def Detecti2cModule():
+def Detecti2cModule(controller):
     print('########################################')
     print('Scanning For i2c Connection Point.')
     print('########################################')
     
     # Create i2c Instance To Detect Board Before Deploying Data
-    i2c = busio.I2C(board.SCL, board.SDA)
-    i2c_list = i2c.scan()
+    i2c_list = controller.i2c.scan()
     
     # Scan i2c Objects For Valid Data
     data_object_found = False
@@ -73,17 +78,16 @@ def Detecti2cModule():
     return(data_object_found)
     
 
-def RobotMain():
-    pwm = Adafruit_PCA9685.PCA9685()
-    pwm.set_pwm_freq(60)
-    robot = SixAxisRobot()
-    HomeRobot(pwm, robot)
+def RobotMain(controller):
+    controller.pwm = Adafruit_PCA9685.PCA9685()
+    controller.pwm.set_pwm_freq(60)
+    HomeRobot(controller)
 #     OscillateJoint(pwm, 5, 390, 150, 600, 0.005)
 #     OscillateJoint(pwm, 4, 390, 150, 600, 0.005)
 #     OscillateJoint(pwm, 3, 390, 150, 600, 0.005)
 #     OscillateJoint(pwm, 2, 200, 150, 250, 0.005)
 #     OscillateJoint(pwm, 0, 390, 290, 490, 0.005)
-    ManualControl(pwm, robot)
+    ManualControl(controller.pwm, controller.robot)
 
 def ManualControl(pwm, robot):
     speed = 10
@@ -165,6 +169,7 @@ def HomeRobot(pwm, robot):
     print('########################################')
     print('Homing Robot. Please Wait...')
     time.sleep(0.5)
+    # Use Delay Timer To Dwell Any Residule Servo Motion
     pwm.set_pwm(robot.axis1.axis, 0, robot.axis1.home)
     pwm.set_pwm(robot.axis2.axis, 0, robot.axis2.home)
     pwm.set_pwm(robot.axis3.axis, 0, robot.axis3.home)
@@ -172,6 +177,7 @@ def HomeRobot(pwm, robot):
     pwm.set_pwm(robot.axis5.axis, 0, robot.axis5.home)
     pwm.set_pwm(robot.axis6.axis, 0, robot.axis6.home)
     time.sleep(0.5)
+    # Use Delay Timer To Dwell Any Residule Servo Motion
     print('Assigning Current Position...')
     robot.axis1.position = robot.axis1.home
     robot.axis1.req_position = robot.axis1.position
@@ -186,6 +192,7 @@ def HomeRobot(pwm, robot):
     robot.axis6.position = robot.axis6.home
     robot.axis6.req_position = robot.axis6.position
     time.sleep(0.5)
+    # Use Delay Timer To Dwell Any Residule Servo Motion
     print('Homing Complete.')
     print('########################################')
 
@@ -215,6 +222,15 @@ def OscillateJoint(pwm, joint, origin, min_sweep, max_sweep, rate):
             current +=1
     print('Oscillation Complete...')
     print('########################################')
+    
+    
+class Controller(object):
+    
+    def __init__(self):
+        self.i2c = busio.I2C(board.SCL, board.SDA)
+        self.pwm = None
+        self.robot1 = SixAxisRobot()
+        self.robot2 = SixAxisRobot() # Reserved For Future Use
 
 
 class SixAxisRobot(object):
