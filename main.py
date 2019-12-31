@@ -51,22 +51,18 @@ def Detecti2cModule(controller):
     print('Scanning For i2c Connection Point.')
     print('########################################')
     
-    # Create i2c Instance To Detect Board Before Deploying Data
     i2c_list = controller.i2c.scan()
     
-    # Scan i2c Objects For Valid Data
     data_object_found = False
     for i in i2c_list:
         if i is not None:
             data_object_found = True
     
-    # Valid Data Found
     if data_object_found:
         print('########################################')
         print('i2c Board Scan Successful.')
         print('########################################')
     
-    # No Valid Data Found
     else:
         print('########################################')
         print('i2c Board Scan Failed.')
@@ -87,7 +83,21 @@ def RobotMain(controller):
 #     OscillateJoint(pwm, 3, 390, 150, 600, 0.005)
 #     OscillateJoint(pwm, 2, 200, 150, 250, 0.005)
 #     OscillateJoint(pwm, 0, 390, 290, 490, 0.005)
-    ManualControl(controller.pwm, controller.robot)
+    ManualControl(controller.pwm, controller.robot1)
+    while True:
+        print('########################################')
+        print('Please Select Mode:')
+        print('[a]: Auto')
+        print('[b]: Manual')
+        print('########################################')
+        response = input()
+        if response == 'a' or 'A':
+            print('no auto mode yet...')
+        if repsonse == 'b' or 'B':
+            ManualControl(controller.pwn, controller.robot1)
+        else:
+            print('Invalid Option')
+    
 
 def ManualControl(pwm, robot):
     speed = 10
@@ -223,6 +233,14 @@ def OscillateJoint(pwm, joint, origin, min_sweep, max_sweep, rate):
     print('Oscillation Complete...')
     print('########################################')
     
+
+def AssembleTeachPoint(point_data, speed, dwell_time):
+    tup = ()
+    tup[0] = speed
+    tup[1] = dwell_time
+    for i in point_data:
+        tup[2+i] = point_data[i]
+    
     
 class Controller(object):
     
@@ -242,6 +260,8 @@ class SixAxisRobot(object):
         self.axis4 = SingleAxis('Axis 4', 160, 610, 390, 3) # Set
         self.axis5 = SingleAxis('Axis 5', 150, 500, 390, 4) # Set
         self.axis6 = SingleAxis('Axis 6', 170, 570, 390, 5) # Set
+        self.path = []
+        self.path_library = [self.path]
 
 
 class SingleAxis(object):
@@ -255,7 +275,7 @@ class SingleAxis(object):
         self.position = 0
         self.req_position = 0
         self.speed = 0
-        self.positioning_complete = True
+        self.complete = True
 
 
 if __name__ == "__main__":
