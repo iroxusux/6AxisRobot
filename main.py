@@ -3,6 +3,7 @@ import time
 import keyboard
 import board
 import busio
+import json
 
 # Import the PCA9685 module.
 from Adafruit_Python_PCA9685 import Adafruit_PCA9685
@@ -77,31 +78,119 @@ def Detecti2cModule(controller):
 def RobotMain(controller):
     controller.pwm = Adafruit_PCA9685.PCA9685()
     controller.pwm.set_pwm_freq(60)
-    HomeRobot(controller)
-#     OscillateJoint(pwm, 5, 390, 150, 600, 0.005)
-#     OscillateJoint(pwm, 4, 390, 150, 600, 0.005)
-#     OscillateJoint(pwm, 3, 390, 150, 600, 0.005)
-#     OscillateJoint(pwm, 2, 200, 150, 250, 0.005)
-#     OscillateJoint(pwm, 0, 390, 290, 490, 0.005)
-    ManualControl(controller.pwm, controller.robot1)
+    HomeRobot(controller.pwm, controller.robot1)
     while True:
         print('########################################')
         print('Please Select Mode:')
-        print('[a]: Auto')
+        print('[a]: Demo')
         print('[b]: Manual')
         print('########################################')
         response = input()
-        if response == 'a' or 'A':
-            print('no auto mode yet...')
-        if repsonse == 'b' or 'B':
-            ManualControl(controller.pwn, controller.robot1)
+        print(response)
+        if response == ('a' or 'A'):
+            DemoRoutine(controller)
+        elif response == ('b' or 'B'):
+            ManualControl(controller.clock, controller.pwm, controller.robot1)
         else:
             print('Invalid Option')
+            
+
+def DemoRoutine(controller):
+    robot = controller.robot1
+    pwm = controller.pwm
+    routine_complete = False
+    path = CompileDemoRoutine()
+    while not routine_complete:
+        for i in path:
+            step_complete = False
+            while not step_complete:
+                time.sleep(controller.clock)
+                speed = i[0]
+                dwell_time = i[1]
+                UpdateAllAxisSpeeds(robot, speed)
+                print(i)
+                robot.axis1.req_position = i[2][0]
+                robot.axis2.req_position = i[2][1]
+                robot.axis3.req_position = i[2][2]
+                robot.axis4.req_position = i[2][3]
+                robot.axis5.req_position = i[2][4]
+                robot.axis6.req_position = i[2][5]
+                robot.gripper.req_position = i[2][6]
+                UpdatePosition(pwm, robot)
+                if (robot.axis1.complete and robot.axis2.complete and robot.axis3.complete
+                    and robot.axis4.complete and robot.axis5.complete and robot.axis6.complete
+                    and robot.gripper.complete):
+                    time.sleep(i[1])
+                    step_complete = True
+            routine_complete = True
+            
+        
+
+def CompileDemoRoutine():
+    path = []
+    demo_speed = 10
+    demo_dwell = .1
+    point_data = (390, 500, 180, 390, 390, 390, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 500, 180, 390, 390, 390, 342) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 500, 180, 390, 390, 390, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 500, 180, 390, 390, 390, 342) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 500, 180, 390, 390, 390, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 380, 320, 390, 390, 390, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 380, 320, 390, 390, 390, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 380, 320, 410, 390, 589, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 380, 300, 370, 240, 169, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 310, 320, 370, 240, 169, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 310, 340, 370, 270, 169, 242) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 310, 340, 370, 270, 169, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 460, 180, 370, 270, 169, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 460, 180, 610, 190, 169, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 460, 180, 160, 180, 589, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (270, 290, 370, 160, 190, 589, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 410, 190, 380, 360, 589, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (550, 250, 420, 170, 180, 147, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 410, 190, 380, 360, 589, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 310, 340, 370, 270, 169, 340) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 310, 340, 370, 270, 169, 242) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (380, 310, 320, 370, 240, 169, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 380, 300, 370, 240, 169, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 380, 320, 410, 390, 589, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 380, 320, 390, 390, 390, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 380, 320, 390, 390, 390, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    point_data = (390, 500, 180, 390, 390, 390, 195) # Set
+    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    return path
+    
+        
     
 
-def ManualControl(pwm, robot):
+def ManualControl(clock, pwm, robot):
     speed = 10
-    clock = 0.01
     UpdateAllAxisSpeeds(robot, speed)
     while True:
         time.sleep(clock)
@@ -134,7 +223,53 @@ def ManualControl(pwm, robot):
             robot.axis6.req_position -= robot.axis6.speed
         elif keyboard.is_pressed('v'):
             robot.axis6.req_position += robot.axis6.speed
-
+            
+        if keyboard.is_pressed('1'):
+            robot.gripper.req_position -= robot.gripper.speed
+        elif keyboard.is_pressed('2'):
+            robot.gripper.req_position += robot.gripper.speed
+            
+        if keyboard.is_pressed('0'):
+            a = robot.axis1.position
+            b = robot.axis2.position
+            c = robot.axis3.position
+            d = robot.axis4.position
+            e = robot.axis5.position
+            f = robot.axis6.position
+            g = robot.gripper.position
+            print('Robot Current Axis Points: 1:{} 2:{} 3:{} 4:{} 5:{} 6:{} 7:{}'.format(a,b,c,d,e,f,g))
+            
+        if keyboard.is_pressed('h'):
+            print('########################################')
+            print('Send Robot To Home? [y]')
+            print('########################################')
+            response = input()
+            if response == ('y' or 'Y'):
+                HomeRobot(pwm, robot)
+                
+        if keyboard.is_pressed('t'):
+            print('########################################')
+            print('Enter Teach Mode? [y]')
+            print('########################################')
+            response = input()
+            if response == ('y' or 'Y'):
+                robot.teach_mode = True
+                print('########################################')
+                print('Add Teach Point? [y]')
+                print('########################################')
+                response = input()
+                if response == ('y' or 'Y'):
+                    print('########################################')
+                    print('Enter Move Speed [1 - 10]')
+                    print('########################################')
+                    try:
+                        response=int(input("Type a number:"))
+                    except ValueError:
+                        print("Value is not a whole number.")
+                    
+#         if keyboard.is_pressed('p'):
+#             if robot.teach_mode == True:
+                
         UpdatePosition(pwm, robot)
 
 
@@ -145,25 +280,35 @@ def UpdatePosition(pwm, robot):
     UpdateAxis(robot.axis4)
     UpdateAxis(robot.axis5)
     UpdateAxis(robot.axis6)
+    UpdateAxis(robot.gripper)
     pwm.set_pwm(robot.axis1.axis, 0, robot.axis1.position)
     pwm.set_pwm(robot.axis2.axis, 0, robot.axis2.position)
     pwm.set_pwm(robot.axis3.axis, 0, robot.axis3.position)
     pwm.set_pwm(robot.axis4.axis, 0, robot.axis4.position)
     pwm.set_pwm(robot.axis5.axis, 0, robot.axis5.position)
     pwm.set_pwm(robot.axis6.axis, 0, robot.axis6.position)
+    pwm.set_pwm(robot.gripper.axis, 0, robot.gripper.position)    
 
 
 def UpdateAxis(axis):
+    axis.complete = False
     if axis.req_position != axis.position:
         if axis.req_position > axis.high_limit:
             axis.req_position = axis.high_limit
         if axis.req_position < axis.low_limit:
             axis.req_position = axis.low_limit
-        axis.position = axis.req_position
-        print(axis, axis.position)
+    if axis.req_position > axis.position:
+        axis.position += axis.speed
+        if axis.position > axis.req_position:
+            axis.position = axis.req_position
+#         axis.position = axis.req_position
+    if axis.req_position < axis.position:
+        axis.position -= axis.speed
+        if axis.position < axis.req_position:
+            axis.position = axis.req_position
     if axis.req_position == axis.position:
         axis.complete = True
-    axis.req_position = axis.position
+#     axis.req_position = axis.position
 
 
 def UpdateAllAxisSpeeds(robot, speed):
@@ -173,6 +318,7 @@ def UpdateAllAxisSpeeds(robot, speed):
     robot.axis4.speed = speed
     robot.axis5.speed = speed
     robot.axis6.speed = speed
+    robot.gripper.speed = speed
 
 
 def HomeRobot(pwm, robot):
@@ -186,6 +332,7 @@ def HomeRobot(pwm, robot):
     pwm.set_pwm(robot.axis4.axis, 0, robot.axis4.home)
     pwm.set_pwm(robot.axis5.axis, 0, robot.axis5.home)
     pwm.set_pwm(robot.axis6.axis, 0, robot.axis6.home)
+    pwm.set_pwm(robot.gripper.axis, 0, robot.gripper.home)
     time.sleep(0.5)
     # Use Delay Timer To Dwell Any Residule Servo Motion
     print('Assigning Current Position...')
@@ -201,6 +348,8 @@ def HomeRobot(pwm, robot):
     robot.axis5.req_position = robot.axis5.position
     robot.axis6.position = robot.axis6.home
     robot.axis6.req_position = robot.axis6.position
+    robot.gripper.position = robot.gripper.home
+    robot.gripper.req_position = robot.gripper.position
     time.sleep(0.5)
     # Use Delay Timer To Dwell Any Residule Servo Motion
     print('Homing Complete.')
@@ -235,11 +384,7 @@ def OscillateJoint(pwm, joint, origin, min_sweep, max_sweep, rate):
     
 
 def AssembleTeachPoint(point_data, speed, dwell_time):
-    tup = ()
-    tup[0] = speed
-    tup[1] = dwell_time
-    for i in point_data:
-        tup[2+i] = point_data[i]
+    return (speed, dwell_time, point_data)
     
     
 class Controller(object):
@@ -247,6 +392,7 @@ class Controller(object):
     def __init__(self):
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.pwm = None
+        self.clock = 0.01
         self.robot1 = SixAxisRobot()
         self.robot2 = SixAxisRobot() # Reserved For Future Use
 
@@ -256,10 +402,12 @@ class SixAxisRobot(object):
     def __init__(self):
         self.axis1 = SingleAxis('Axis 1', 150, 600, 390, 0) # Set
         self.axis2 = SingleAxis('Axis 2', 230, 590, 500, 1) # Set
-        self.axis3 = SingleAxis('Axis 3', 180, 240, 200, 2) # Set
+        self.axis3 = SingleAxis('Axis 3', 180, 550, 200, 2) # Set
         self.axis4 = SingleAxis('Axis 4', 160, 610, 390, 3) # Set
         self.axis5 = SingleAxis('Axis 5', 150, 500, 390, 4) # Set
-        self.axis6 = SingleAxis('Axis 6', 170, 570, 390, 5) # Set
+        self.axis6 = SingleAxis('Axis 6', 147, 589, 390, 5) # Set
+        self.gripper = SingleAxis('Gripper', 195, 342, 200, 6)
+        self.teach_mode = False
         self.path = []
         self.path_library = [self.path]
 
