@@ -3,7 +3,10 @@ import time
 import keyboard
 import board
 import busio
+import xbox
 import json
+
+import irox_tools
 
 # Import the PCA9685 module.
 from Adafruit_Python_PCA9685 import Adafruit_PCA9685
@@ -30,6 +33,7 @@ def InitializeEnvironment(controller):
             break
     
     CleanUpEnvironment(controller)
+    SavePathData(controller)
     
     print('########################################')
     print('System Exiting.')
@@ -42,9 +46,44 @@ def CleanUpEnvironment(controller):
     except ValueError:
         pass
     controller.i2c.deinit()
+    try:
+        controller.joy.close()
+    except AttributeError:
+        pass
     print('########################################')
     print('Clean Up Complete.')
     print('########################################')
+    
+
+def SavePathData(controller):
+    print('########################################')
+    print('Saving Path Data.')
+    print('########################################')
+    with open('PathData.txt', 'w') as a:
+        json.dump(controller.robot1.paths, a)
+    print('########################################')
+    print('Path Data Saved.')
+    print('########################################')
+    
+
+def LoadPathData(controller):
+    print('########################################')
+    print('Loading Path Data.')
+    print('########################################')
+    try:
+        with open('PathData.txt', 'r') as a:
+            data = json.load(a)
+            controller.robot1.paths = data
+        print('########################################')
+        print('Path Data Loaded.')
+        print('########################################')
+    except FileNotFoundError:
+        print('########################################')
+        print('File Not Found.')
+        print('No Path Data Loaded.')
+        print('########################################')
+        controller.robot1.paths.append(CompileDemoRoutine())
+    
     
     
 def Detecti2cModule(controller):
@@ -78,37 +117,42 @@ def Detecti2cModule(controller):
 def RobotMain(controller):
     controller.pwm = Adafruit_PCA9685.PCA9685()
     controller.pwm.set_pwm_freq(60)
+    LoadPathData(controller)
+    
     HomeRobot(controller.pwm, controller.robot1)
     while True:
         print('########################################')
         print('Please Select Mode:')
         print('[a]: Demo')
         print('[b]: Manual')
+        print('[c]: Run Path')
         print('########################################')
         response = input()
         print(response)
         if response == ('a' or 'A'):
-            DemoRoutine(controller)
+            RunRoutine(controller, controller.robot1.path[0])
         elif response == ('b' or 'B'):
-            ManualControl(controller.clock, controller.pwm, controller.robot1)
+            ManualControl(controller)
+        elif response == ('c' or 'C'):
+            path_to_run = SelectPath(controller.robot1.paths)
+            if path_to_run:
+                RunRoutine(controller, path_to_run)
         else:
             print('Invalid Option')
             
 
-def DemoRoutine(controller):
+def RunRoutine(controller, path):
     robot = controller.robot1
     pwm = controller.pwm
     routine_complete = False
-    path = CompileDemoRoutine()
     while not routine_complete:
-        for i in path:
+        for i in path['Path']:
             step_complete = False
             while not step_complete:
                 time.sleep(controller.clock)
                 speed = i[0]
                 dwell_time = i[1]
                 UpdateAllAxisSpeeds(robot, speed)
-                print(i)
                 robot.axis1.req_position = i[2][0]
                 robot.axis2.req_position = i[2][1]
                 robot.axis3.req_position = i[2][2]
@@ -124,76 +168,109 @@ def DemoRoutine(controller):
                     step_complete = True
             routine_complete = True
             
-        
+
+def SelectPath(paths):
+    print('########################################')
+    print('Select Path To Run:')
+    for i, v in enumerate(paths):
+        print('[{}]: {}'.format(i, v['Name']))
+    print('########################################')
+    try:
+        response=int(input("Type a number:"))
+        return paths[response]
+    except ValueError:
+        print("Value is not a whole number.")
+    return None
+    
+
 
 def CompileDemoRoutine():
-    path = []
+    path = {
+        'Name': 'Demo Path',
+        'Path': [],
+        }
     demo_speed = 10
     demo_dwell = .1
     point_data = (390, 500, 180, 390, 390, 390, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 500, 180, 390, 390, 390, 342) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 500, 180, 390, 390, 390, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 500, 180, 390, 390, 390, 342) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 500, 180, 390, 390, 390, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 380, 320, 390, 390, 390, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 380, 320, 390, 390, 390, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 380, 320, 410, 390, 589, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 380, 300, 370, 240, 169, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 310, 320, 370, 240, 169, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 310, 340, 370, 270, 169, 242) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 310, 340, 370, 270, 169, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 460, 180, 370, 270, 169, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 460, 180, 610, 190, 169, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 460, 180, 160, 180, 589, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (270, 290, 370, 160, 190, 589, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 410, 190, 380, 360, 589, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (550, 250, 420, 170, 180, 147, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 410, 190, 380, 360, 589, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 310, 340, 370, 270, 169, 340) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 310, 340, 370, 270, 169, 242) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (380, 310, 320, 370, 240, 169, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 380, 300, 370, 240, 169, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 380, 320, 410, 390, 589, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 380, 320, 390, 390, 390, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 380, 320, 390, 390, 390, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     point_data = (390, 500, 180, 390, 390, 390, 195) # Set
-    path.append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
+    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
     return path
     
         
     
 
-def ManualControl(clock, pwm, robot):
+def ManualControl(controller):
+    robot = controller.robot1
+    pwm = controller.pwm
+    clock = controller.clock
+    joy = controller.joy
+    joy_set = True
+    joy_set_ons = False
+    exit_manual = False
     speed = 10
     UpdateAllAxisSpeeds(robot, speed)
-    while True:
+    while not exit_manual:
         time.sleep(clock)
+        a = robot.axis1.position
+        b = robot.axis2.position
+        c = robot.axis3.position
+        d = robot.axis4.position
+        e = robot.axis5.position
+        f = robot.axis6.position
+        g = robot.gripper.position
+        robot.full_position = (a,b,c,d,e,f,g)
+        
         if keyboard.is_pressed('q'):
             robot.axis1.req_position -= robot.axis1.speed
         elif keyboard.is_pressed('w'):
@@ -229,14 +306,21 @@ def ManualControl(clock, pwm, robot):
         elif keyboard.is_pressed('2'):
             robot.gripper.req_position += robot.gripper.speed
             
+        if controller.enable_joy:
+            left_stick = joy.leftStick()
+            right_stick = joy.rightStick()
+            joy_set, joy_set_ons = irox_tools.Toggle(joy_set, joy.Y(), joy_set_ons)
+            if joy_set:
+                robot.axis1.req_position += (int(left_stick[0]*robot.axis1.speed))
+                robot.axis2.req_position += (int(left_stick[1]*robot.axis2.speed))
+                robot.axis3.req_position += (int(right_stick[0]*robot.axis3.speed))
+                robot.axis4.req_position += (int(right_stick[1]*robot.axis4.speed))
+            if not joy_set:
+                robot.axis5.req_position += (int(left_stick[0]*robot.axis5.speed))
+                robot.axis6.req_position += (int(left_stick[1]*robot.axis6.speed))
+                robot.gripper.req_position += (int(right_stick[0]*robot.gripper.speed))
+            
         if keyboard.is_pressed('0'):
-            a = robot.axis1.position
-            b = robot.axis2.position
-            c = robot.axis3.position
-            d = robot.axis4.position
-            e = robot.axis5.position
-            f = robot.axis6.position
-            g = robot.gripper.position
             print('Robot Current Axis Points: 1:{} 2:{} 3:{} 4:{} 5:{} 6:{} 7:{}'.format(a,b,c,d,e,f,g))
             
         if keyboard.is_pressed('h'):
@@ -246,7 +330,7 @@ def ManualControl(clock, pwm, robot):
             response = input()
             if response == ('y' or 'Y'):
                 HomeRobot(pwm, robot)
-                
+
         if keyboard.is_pressed('t'):
             print('########################################')
             print('Enter Teach Mode? [y]')
@@ -254,6 +338,30 @@ def ManualControl(clock, pwm, robot):
             response = input()
             if response == ('y' or 'Y'):
                 robot.teach_mode = True
+                print('########################################')
+                print('Enter Path Name:')
+                print('########################################')
+                name = input()
+                path = {
+                'Name': name,
+                'Path': [],
+                }
+                robot.paths.append(path)
+                robot.current_teach_path = name
+                
+        if robot.teach_mode:
+            PathTeaching(controller)
+
+        if keyboard.is_pressed('esc'):
+            exit_manual = True
+            
+        UpdatePosition(pwm, robot)
+
+
+def PathTeaching(controller):       
+        robot = controller.robot1
+        if robot.teach_mode:
+            if keyboard.is_pressed('ins'):
                 print('########################################')
                 print('Add Teach Point? [y]')
                 print('########################################')
@@ -263,14 +371,29 @@ def ManualControl(clock, pwm, robot):
                     print('Enter Move Speed [1 - 10]')
                     print('########################################')
                     try:
-                        response=int(input("Type a number:"))
+                        speed_response=int(input("Type a number:"))
                     except ValueError:
                         print("Value is not a whole number.")
-                    
-#         if keyboard.is_pressed('p'):
-#             if robot.teach_mode == True:
-                
-        UpdatePosition(pwm, robot)
+                    if speed_response > 10:
+                        speed_response = 10
+                    if speed_response < 1:
+                        speed_response = 1
+                    print('########################################')
+                    print('Enter Dwell Time [0.1 - 5]')
+                    print('########################################')
+                    try:
+                        dwell_response=float(input("Type a number:"))
+                    except ValueError:
+                        print("Value is not a number.")
+                    if dwell_response > 5.0:
+                        dwell_response = 5.0
+                    if dwell_response < 0.1:
+                        dwell_response = 0.1
+                    for i in controller.robot1.paths:
+                        print(i)
+                        if i['Name'] == robot.current_teach_path:
+                            i['Path'].append(AssembleTeachPoint(controller.robot1.full_position, speed_response, dwell_response))
+                            print(i['Path'])
 
 
 def UpdatePosition(pwm, robot):
@@ -395,6 +518,16 @@ class Controller(object):
         self.clock = 0.01
         self.robot1 = SixAxisRobot()
         self.robot2 = SixAxisRobot() # Reserved For Future Use
+        try:
+            self.joy = xbox.Joystick()
+            self.enable_joy = True
+        except OSError:
+            print('########################################')
+            print('Xbox 360 Controller Not Detected.')
+            print('########################################')
+            self.enable_joy = False
+            pass
+            
 
 
 class SixAxisRobot(object):
@@ -407,9 +540,10 @@ class SixAxisRobot(object):
         self.axis5 = SingleAxis('Axis 5', 150, 500, 390, 4) # Set
         self.axis6 = SingleAxis('Axis 6', 147, 589, 390, 5) # Set
         self.gripper = SingleAxis('Gripper', 195, 342, 200, 6)
+        self.full_position = (0,0,0,0,0,0,0)
         self.teach_mode = False
-        self.path = []
-        self.path_library = [self.path]
+        self.paths = []
+        self.current_teach_path = ''
 
 
 class SingleAxis(object):
