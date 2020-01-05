@@ -1,25 +1,29 @@
 import busio
 import xbox
 
-import Engine
 import SainSmartRobot
+
+from Adafruit_Python_PCA9685 import Adafruit_PCA9685
 
 
 class RaspberryPiController(object):
 
-    def __init__(self):
+    def __init__(self, queue):
         board_imported = False
         try:
             import board
             board_imported = True
         except NotImplementedError:
             print('Board Not Detected. Unable To Create Controller i2c Connection.')
-
+        try:
+            self.pwm = Adafruit_PCA9685.PCA9685()
+            self.pwm.set_pwm_freq(60)
+        except FileNotFoundError:
+            print('whoops')
         if board_imported:
             self.i2c = busio.I2C(board.SCL, board.SDA)
         else:
             self.i2c = None
-        self.pwm = None
         self.clock = 0.01
         self.robot = []
         self.selected_robot = None
@@ -30,10 +34,10 @@ class RaspberryPiController(object):
             self.joy = None
             self.enable_joy = False
             pass
-        self.InitializeEnvironment()
-
-    def InitializeEnvironment(self):
         self.ok_to_run = self.Detecti2cModule()
+
+    def UpdateQueue(self):
+        self.queue.put(self)
 
     def CleanUpEnvironment(self):
         if self.i2c:
@@ -61,8 +65,7 @@ class RaspberryPiController(object):
         robot.name = name
         self.robot.append(robot)
 
-    def RunRobot(self, robot):
-        self.selected_robot = robot
+    def RunRobot(self):
         try:
             if self.ok_to_run:
                 SainSmartRobot.RobotMain(self)

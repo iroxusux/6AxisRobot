@@ -2,37 +2,23 @@ from __future__ import division
 import time
 import keyboard
 
-import Engine
-
 import irox_tools
-
-# Import the PCA9685 module.
-from Adafruit_Python_PCA9685 import Adafruit_PCA9685
 
 
 def RobotMain(controller):
-    controller.pwm = Adafruit_PCA9685.PCA9685()
-    controller.pwm.set_pwm_freq(60)
+
     HomeRobot(controller.pwm, controller.selected_robot)
-    while True:
-        print('########################################')
-        print('Please Select Mode:')
-        print('[a]: Demo')
-        print('[b]: Manual')
-        print('[c]: Run Path')
-        print('########################################')
-        response = input()
-        print(response)
-        if response == ('a' or 'A'):
-            RunRoutine(controller, controller.selected_robot.path[0])
-        elif response == ('b' or 'B'):
-            ManualControl(controller)
-        elif response == ('c' or 'C'):
-            path_to_run = SelectPath(controller.selected_robot.paths)
-            if path_to_run:
-                RunRoutine(controller, path_to_run)
-        else:
-            print('Invalid Option')
+    response = 'b'
+    if response == ('a' or 'A'):
+        RunRoutine(controller, controller.selected_robot.path[0])
+    elif response == ('b' or 'B'):
+        ManualControl(controller)
+    elif response == ('c' or 'C'):
+        path_to_run = SelectPath(controller.selected_robot.paths)
+        if path_to_run:
+            RunRoutine(controller, path_to_run)
+    else:
+        print('Invalid Option')
 
 
 def RunRoutine(controller, path):
@@ -233,8 +219,8 @@ def ManualControl(controller):
                 print('########################################')
                 name = input()
                 path = {
-                'Name': name,
-                'Path': [],
+                    'Name': name,
+                    'Path': [],
                 }
                 robot.paths.append(path)
                 robot.current_teach_path = name
@@ -245,7 +231,7 @@ def ManualControl(controller):
         if keyboard.is_pressed('esc'):
             exit_manual = True
 
-        UpdatePosition(pwm, robot)
+        UpdatePosition(controller)
 
 
 def PathTeaching(controller):
@@ -286,7 +272,9 @@ def PathTeaching(controller):
                         print(i['Path'])
 
 
-def UpdatePosition(pwm, robot):
+def UpdatePosition(controller):
+    pwm = controller.pwm
+    robot = controller.selected_robot
     UpdateAxis(robot.axis1)
     UpdateAxis(robot.axis2)
     UpdateAxis(robot.axis3)
@@ -301,6 +289,7 @@ def UpdatePosition(pwm, robot):
     pwm.set_pwm(robot.axis5.axis, 0, robot.axis5.position)
     pwm.set_pwm(robot.axis6.axis, 0, robot.axis6.position)
     pwm.set_pwm(robot.gripper.axis, 0, robot.gripper.position)
+    controller.UpdateQueue()
 
 
 def UpdateAxis(axis):

@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 import Controllers
+import Engine
 import GUI
 import HMI
 
@@ -42,20 +43,21 @@ class Form(QtWidgets.QMainWindow):
     def Supervisor(self, queue):
         if not queue.empty():
             processor = queue.get()
-            self.HMI.ProcessEvents()
             self.HMI.ProcessData(processor)
+        self.HMI.ProcessEvents()
 
 
 class Processor(object):
-    def __init__(self):
-        self.controller = Controllers.RaspberryPiController()
+    def __init__(self, queue):
+        self.queue = queue
+        self.controller = Controllers.RaspberryPiController(queue)
 
 
-def HandleProcessor(processor, queue):
-    processor.controller.AddRobot('irox_Robot')
+def HandleProcessor(queue):
+    controller = Controllers.RaspberryPiController(queue)
+    controller.AddRobot('irox_Robot')
     while True:
-        processor.controller.RunRobot(processor.controller.robot[0])
-        queue.put(processor)
+        Engine.RunEngine(controller)
 
 
 def HandleForm(queue):
@@ -68,9 +70,8 @@ def HandleForm(queue):
 
 
 if __name__ == '__main__':
-    processor = Processor()
     queue = multiprocessing.Queue()
-    proc1 = multiprocessing.Process(target=HandleProcessor, args=(processor, queue))
+    proc1 = multiprocessing.Process(target=HandleProcessor, args=(queue,))
     proc2 = multiprocessing.Process(target=HandleForm, args=(queue,))
     proc1.start()
     proc2.start()

@@ -3,6 +3,11 @@ import json
 import SainSmartRobot
 
 
+def RunEngine(controller):
+    controller.selected_robot = controller.robot[0]
+    controller.RunRobot()
+
+
 def SavePathData(controller):
     with open('PathData.txt', 'w') as a:
         json.dump(controller)
