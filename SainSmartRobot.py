@@ -1,7 +1,8 @@
 from __future__ import division
 import time
 import keyboard
-import json
+
+import Engine
 
 import irox_tools
 
@@ -12,8 +13,6 @@ from Adafruit_Python_PCA9685 import Adafruit_PCA9685
 def RobotMain(controller):
     controller.pwm = Adafruit_PCA9685.PCA9685()
     controller.pwm.set_pwm_freq(60)
-    LoadPathData(controller)
-
     HomeRobot(controller.pwm, controller.robot1)
     while True:
         print('########################################')
@@ -46,7 +45,6 @@ def RunRoutine(controller, path):
             while not step_complete:
                 time.sleep(controller.clock)
                 speed = i[0]
-                dwell_time = i[1]
                 UpdateAllAxisSpeeds(robot, speed)
                 robot.axis1.req_position = i[2][0]
                 robot.axis2.req_position = i[2][1]
@@ -430,7 +428,3 @@ class SingleAxis(object):
         self.req_position = 0
         self.speed = 0
         self.complete = True
-
-
-if __name__ == "__main__":
-    Main()
