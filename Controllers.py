@@ -8,7 +8,7 @@ from Adafruit_Python_PCA9685 import Adafruit_PCA9685
 
 class RaspberryPiController(object):
 
-    def __init__(self, queue):
+    def __init__(self):
         board_imported = False
         try:
             import board
@@ -20,13 +20,6 @@ class RaspberryPiController(object):
             self.pwm.set_pwm_freq(60)
         except FileNotFoundError:
             print('whoops')
-        if board_imported:
-            self.i2c = busio.I2C(board.SCL, board.SDA)
-        else:
-            self.i2c = None
-        self.clock = 0.01
-        self.robot = []
-        self.selected_robot = None
         try:
             self.joy = xbox.Joystick()
             self.enable_joy = True
@@ -34,10 +27,17 @@ class RaspberryPiController(object):
             self.joy = None
             self.enable_joy = False
             pass
+        if board_imported:
+            self.i2c = busio.I2C(board.SCL, board.SDA)
+        else:
+            self.i2c = None
+        self.clock = 0.01
+        self.robot = []
+        self.selected_robot = None
         self.ok_to_run = self.Detecti2cModule()
 
-    def UpdateQueue(self):
-        self.queue.put(self)
+    def UpdateQueue(self, queue):
+        queue.put(self)
 
     def CleanUpEnvironment(self):
         if self.i2c:
@@ -65,10 +65,12 @@ class RaspberryPiController(object):
         robot.name = name
         self.robot.append(robot)
 
-    def RunRobot(self):
+    def RunRobot(self, queue):
         try:
             if self.ok_to_run:
                 SainSmartRobot.RobotMain(self)
         except KeyboardInterrupt:
             pass
+        self.selected_robot.axis1.Position = 500
+        self.UpdateQueue(queue)
         self.CleanUpEnvironment()

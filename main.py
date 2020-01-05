@@ -49,10 +49,10 @@ class Form(QtWidgets.QMainWindow):
 
 
 def HandleProcessor(queue):
-    controller = Controllers.RaspberryPiController(queue)
+    controller = Controllers.RaspberryPiController()
     controller.AddRobot('irox_Robot')
     while True:
-        Engine.RunEngine(controller)
+        Engine.RunEngine(controller, queue)
         time.sleep(0.01)  # Let Processors Do Other Tasks
 
 

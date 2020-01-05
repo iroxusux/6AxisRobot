@@ -26,8 +26,8 @@ class HMI(object):
         self.Input.UpdateInputs(self)
         self.Output.UpdateOutputs(self)
 
-    def ProcessData(self, processor):
-        self.robot = processor.controller.selected_robot
+    def ProcessData(self, controller):
+        self.robot = controller.selected_robot
 
 
 class HMIInputs(object):
@@ -60,26 +60,26 @@ class HMIOutputs(object):
         self.UpdateRobotScreen(HMI)
 
     def UpdateRobotScreen(self, HMI):
-        HMI.ui.Axis1_Current_Pos_LCD = self.robot.axis1.position
-        HMI.ui.Axis2_Current_Pos_LCD = self.robot.axis2.position
-        HMI.ui.Axis3_Current_Pos_LCD = self.robot.axis3.position
-        HMI.ui.Axis4_Current_Pos_LCD = self.robot.axis4.position
-        HMI.ui.Axis5_Current_Pos_LCD = self.robot.axis5.position
-        HMI.ui.Axis6_Current_Pos_LCD = self.robot.axis6.position
-        HMI.ui.Axis7_Current_Pos_LCD = self.robot.gripper.position
+        HMI.ui.Axis1_Current_Pos_LCD.display(self.robot.axis1.position)
+        HMI.ui.Axis2_Current_Pos_LCD.display(self.robot.axis2.position)
+        HMI.ui.Axis3_Current_Pos_LCD.display(self.robot.axis3.position)
+        HMI.ui.Axis4_Current_Pos_LCD.display(self.robot.axis4.position)
+        HMI.ui.Axis5_Current_Pos_LCD.display(self.robot.axis5.position)
+        HMI.ui.Axis6_Current_Pos_LCD.display(self.robot.axis6.position)
+        HMI.ui.Axis7_Current_Pos_LCD.display(self.robot.gripper.position)
 
-        HMI.ui.Axis1_Low_Limit_LCD = self.robot.axis1.low_limit
-        HMI.ui.Axis2_Low_Limit_LCD = self.robot.axis2.low_limit
-        HMI.ui.Axis3_Low_Limit_LCD = self.robot.axis3.low_limit
-        HMI.ui.Axis4_Low_Limit_LCD = self.robot.axis4.low_limit
-        HMI.ui.Axis5_Low_Limit_LCD = self.robot.axis5.low_limit
-        HMI.ui.Axis6_Low_Limit_LCD = self.robot.axis6.low_limit
-        HMI.ui.Axis7_Low_Limit_LCD = self.robot.gripper.low_limit
+        HMI.ui.Axis1_Low_Limit_LCD.display(self.robot.axis1.low_limit)
+        HMI.ui.Axis2_Low_Limit_LCD.display(self.robot.axis2.low_limit)
+        HMI.ui.Axis3_Low_Limit_LCD.display(self.robot.axis3.low_limit)
+        HMI.ui.Axis4_Low_Limit_LCD.display(self.robot.axis4.low_limit)
+        HMI.ui.Axis5_Low_Limit_LCD.display(self.robot.axis5.low_limit)
+        HMI.ui.Axis6_Low_Limit_LCD.display(self.robot.axis6.low_limit)
+        HMI.ui.Axis7_Low_Limit_LCD.display(self.robot.gripper.low_limit)
 
-        HMI.ui.Axis1_high_Limit_LCD = self.robot.axis1.high_limit
-        HMI.ui.Axis2_high_Limit_LCD = self.robot.axis2.high_limit
-        HMI.ui.Axis3_high_Limit_LCD = self.robot.axis3.high_limit
-        HMI.ui.Axis4_high_Limit_LCD = self.robot.axis4.high_limit
-        HMI.ui.Axis5_high_Limit_LCD = self.robot.axis5.high_limit
-        HMI.ui.Axis6_high_Limit_LCD = self.robot.axis6.high_limit
-        HMI.ui.Axis7_high_Limit_LCD = self.robot.gripper.high_limit
+        HMI.ui.Axis1_High_Limit_LCD.display(self.robot.axis1.high_limit)
+        HMI.ui.Axis2_High_Limit_LCD.display(self.robot.axis2.high_limit)
+        HMI.ui.Axis3_High_Limit_LCD.display(self.robot.axis3.high_limit)
+        HMI.ui.Axis4_High_Limit_LCD.display(self.robot.axis4.high_limit)
+        HMI.ui.Axis5_High_Limit_LCD.display(self.robot.axis5.high_limit)
+        HMI.ui.Axis6_High_Limit_LCD.display(self.robot.axis6.high_limit)
+        HMI.ui.Axis7_High_Limit_LCD.display(self.robot.gripper.high_limit)
