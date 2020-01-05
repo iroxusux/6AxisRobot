@@ -57,6 +57,7 @@ class HMIOutputs(object):
             except TypeError:
                 print('Integer Type Error. Not Valid Integer: {}'.format(HMI.Input.Navigation_Req))
                 self.GoToScreen = -1
+        self.UpdateRobotScreen(HMI)
 
     def UpdateRobotScreen(self, HMI):
         HMI.ui.Axis1_Current_Pos_LCD = self.robot.axis1.position

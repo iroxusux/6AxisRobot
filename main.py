@@ -1,4 +1,5 @@
 import sys
+import time
 import multiprocessing
 
 from PyQt5 import QtWidgets
@@ -47,17 +48,12 @@ class Form(QtWidgets.QMainWindow):
         self.HMI.ProcessEvents()
 
 
-class Processor(object):
-    def __init__(self, queue):
-        self.queue = queue
-        self.controller = Controllers.RaspberryPiController(queue)
-
-
 def HandleProcessor(queue):
     controller = Controllers.RaspberryPiController(queue)
     controller.AddRobot('irox_Robot')
     while True:
         Engine.RunEngine(controller)
+        time.sleep(0.01)  # Let Processors Do Other Tasks
 
 
 def HandleForm(queue):
@@ -67,6 +63,7 @@ def HandleForm(queue):
     while True:
         app.processEvents()
         form.Supervisor(queue)
+        time.sleep(0.01)  # Let Processors Do Other Tasks
 
 
 if __name__ == '__main__':
