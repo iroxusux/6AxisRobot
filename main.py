@@ -1,5 +1,5 @@
 import sys
-import threading
+import multiprocessing
 
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
@@ -13,10 +13,10 @@ import HMI
 
 
 def threaded(fn):
-    def wrapper(*args, **kwargs):
-        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
-        thread.start()
-        return thread
+    def wrapper(*args):
+        process = multiprocessing.Process(target=fn, args=args)
+        process.start()
+        return process
     return wrapper
 
 
@@ -39,34 +39,40 @@ class Form(QtWidgets.QMainWindow):
     def GoTo_PushButton_1(self):
         self.HMI.Input.Navigation_Req = 1
 
-    def Supervisor(self, processor):
-        self.HMI.ProcessEvents()
-        self.HMI.ProcessData(processor)
+    def Supervisor(self, queue):
+        if not queue.empty():
+            processor = queue.get()
+            self.HMI.ProcessEvents()
+            self.HMI.ProcessData(processor)
 
 
 class Processor(object):
     def __init__(self):
         self.controller = Controllers.RaspberryPiController()
 
-    @threaded
-    def CreateForm(self):
-        self.form_app = QtWidgets.QApplication(sys.argv)
-        self.form = Form()
-        self.form.show()
-        while True:
-            self.form_app.processEvents()
-            self.form.Supervisor(self)
 
-    @threaded
-    def TemporarySetup(self):
-        self.controller.AddRobot('irox_Robot')
-        while True:
-            self.controller.RunRobot(self.controller.robot[0])
+def HandleProcessor(processor, queue):
+    processor.controller.AddRobot('irox_Robot')
+    while True:
+        processor.controller.RunRobot(processor.controller.robot[0])
+        queue.put(processor)
+
+
+def HandleForm(queue):
+    app = QtWidgets.QApplication(sys.argv)
+    form = Form()
+    form.show()
+    while True:
+        app.processEvents()
+        form.Supervisor(queue)
 
 
 if __name__ == '__main__':
     processor = Processor()
-    processor_proc = processor.TemporarySetup()
-    form_proc = processor.CreateForm()
-    processor_proc.join()
-    form_proc.start()
+    queue = multiprocessing.Queue()
+    proc1 = multiprocessing.Process(target=HandleProcessor, args=(processor, queue))
+    proc2 = multiprocessing.Process(target=HandleForm, args=(queue,))
+    proc1.start()
+    proc2.start()
+    proc1.join()
+    proc2.join()
