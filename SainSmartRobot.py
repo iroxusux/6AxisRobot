@@ -13,7 +13,7 @@ from Adafruit_Python_PCA9685 import Adafruit_PCA9685
 def RobotMain(controller):
     controller.pwm = Adafruit_PCA9685.PCA9685()
     controller.pwm.set_pwm_freq(60)
-    HomeRobot(controller.pwm, controller.robot1)
+    HomeRobot(controller.pwm, controller.selected_robot)
     while True:
         print('########################################')
         print('Please Select Mode:')
@@ -24,11 +24,11 @@ def RobotMain(controller):
         response = input()
         print(response)
         if response == ('a' or 'A'):
-            RunRoutine(controller, controller.robot1.path[0])
+            RunRoutine(controller, controller.selected_robot.path[0])
         elif response == ('b' or 'B'):
             ManualControl(controller)
         elif response == ('c' or 'C'):
-            path_to_run = SelectPath(controller.robot1.paths)
+            path_to_run = SelectPath(controller.selected_robot.paths)
             if path_to_run:
                 RunRoutine(controller, path_to_run)
         else:
@@ -36,7 +36,7 @@ def RobotMain(controller):
 
 
 def RunRoutine(controller, path):
-    robot = controller.robot1
+    robot = controller.selected_robot
     pwm = controller.pwm
     routine_complete = False
     while not routine_complete:
@@ -141,7 +141,7 @@ def CompileDemoRoutine():
 
 
 def ManualControl(controller):
-    robot = controller.robot1
+    robot = controller.selected_robot
     pwm = controller.pwm
     clock = controller.clock
     joy = controller.joy
@@ -249,7 +249,7 @@ def ManualControl(controller):
 
 
 def PathTeaching(controller):
-    robot = controller.robot1
+    robot = controller.selected_robot
     if robot.teach_mode:
         if keyboard.is_pressed('ins'):
             print('########################################')
@@ -279,10 +279,10 @@ def PathTeaching(controller):
                     dwell_response = 5.0
                 if dwell_response < 0.1:
                     dwell_response = 0.1
-                for i in controller.robot1.paths:
+                for i in controller.selected_robot.paths:
                     print(i)
                     if i['Name'] == robot.current_teach_path:
-                        i['Path'].append(AssembleTeachPoint(controller.robot1.full_position, speed_response, dwell_response))
+                        i['Path'].append(AssembleTeachPoint(controller.selected_robot.full_position, speed_response, dwell_response))
                         print(i['Path'])
 
 
