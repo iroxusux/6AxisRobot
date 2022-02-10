@@ -9,35 +9,44 @@ from Adafruit_Python_PCA9685 import Adafruit_PCA9685
 class RaspberryPiController(object):
 
     def __init__(self):
-        board_imported = False
+
+        # Attempt To Connect To I2C Adafruit 9685 Board
         try:
             import board
-            board_imported = True
-        except NotImplementedError:
-            print('Board Not Detected. Unable To Create Controller i2c Connection.')
-        try:
+            print('I2C Board Connection Established.')
+            self.i2c = busio.I2C(board.SCL, board.SDA)
+            print('I2C Board Connection Persist Complete.')
+            self.ok_to_run = False
+            self.DetectI2CModule()  # Read I2C Pins To Validate Active Connection Before Continuing
+            if self.ok_to_run is True:
+                print('I2C Board Valid Controller Detected.')
+            # Create Instance Of PCA Controller
             self.pwm = Adafruit_PCA9685.PCA9685()
+            print('PCA Object Created.')
             self.pwm.set_pwm_freq(60)
-        except FileNotFoundError:
-            print('whoops')
+            print('PWM Frequency Set.')
+        except NotImplementedError:
+            print('Board Not Detected. Unable To Create Controller I2C Connection.')
+            print('Check I2C Is Enabled Using The Terminal.')
+            print('sudo raspi-config.')
+
+        # Detect XBox Controller Plugin
         try:
             self.joy = xbox.Joystick()
             self.enable_joy = True
+            print('XBox Controller Detected & Enabled')
         except OSError:
             self.joy = None
             self.enable_joy = False
-            pass
-        if board_imported:
-            self.i2c = busio.I2C(board.SCL, board.SDA)
-        else:
-            self.i2c = None
-        self.clock = 0.01
-        self.robot = []
-        self.selected_robot = None
-        self.ok_to_run = self.Detecti2cModule()
+            print('No XBox Controller Detected. Controller Fucntion Not Enabled.')
+            print('Reboot Controller To Retry Connection')
 
-    def UpdateQueue(self, queue):
-        queue.put(self)
+        print('Local Clock Update Frequency Set')
+        self.clock = 0.01  # Set Internal Clock For Localized Update Speeds
+        print('Robot Controller Driver Connected')
+        self.robot = SainSmartRobot.SixAxisRobot(self.pwm, self.clock)
+        print('Running Robot...')
+        self.RunRobot()
 
     def CleanUpEnvironment(self):
         if self.i2c:
@@ -51,26 +60,17 @@ class RaspberryPiController(object):
         except AttributeError:
             pass
 
-    def Detecti2cModule(self):
-        data_object_found = False
+    def DetectI2CModule(self):
         if self.i2c:
             i2c_list = self.i2c.scan()
             for i in i2c_list:
                 if i is not None:
-                    data_object_found = True
-        return(data_object_found)
+                    self.ok_to_run = True
+                    return
 
-    def AddRobot(self, name):
-        robot = SainSmartRobot.SixAxisRobot()
-        robot.name = name
-        self.robot.append(robot)
-
-    def RunRobot(self, queue):
+    def RunRobot(self):
         try:
             if self.ok_to_run:
-                SainSmartRobot.RobotMain(self)
+                self.robot.main()
         except KeyboardInterrupt:
-            pass
-        self.selected_robot.axis1.Position = 500
-        self.UpdateQueue(queue)
-        self.CleanUpEnvironment()
+            self.CleanUpEnvironment()

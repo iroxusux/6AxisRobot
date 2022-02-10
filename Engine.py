@@ -3,9 +3,9 @@ import json
 import SainSmartRobot
 
 
-def RunEngine(controller, queue):
+def RunEngine(controller):
     controller.selected_robot = controller.robot[0]
-    controller.RunRobot(queue)
+    controller.RunRobot()
 
 
 def SavePathData(controller):
