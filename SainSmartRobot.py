@@ -149,29 +149,6 @@ def PathTeaching(controller):
                         print(i['Path'])
 
 
-def UpdatePosition(controller):
-    pwm = controller.pwm
-    robot = controller.selected_robot
-    UpdateAxis(robot.axis1)
-    UpdateAxis(robot.axis2)
-    UpdateAxis(robot.axis3)
-    UpdateAxis(robot.axis4)
-    UpdateAxis(robot.axis5)
-    UpdateAxis(robot.axis6)
-    UpdateAxis(robot.gripper)
-    pwm.set_pwm(robot.axis1.axis, 0, robot.axis1.position)
-    pwm.set_pwm(robot.axis2.axis, 0, robot.axis2.position)
-    pwm.set_pwm(robot.axis3.axis, 0, robot.axis3.position)
-    pwm.set_pwm(robot.axis4.axis, 0, robot.axis4.position)
-    pwm.set_pwm(robot.axis5.axis, 0, robot.axis5.position)
-
-
-
-
-
-#     axis.req_position = axis.position
-
-
 def OscillateJoint(pwm, joint, origin, min_sweep, max_sweep, rate):
     print('########################################')
     print('Beginning Oscillation...')
@@ -208,9 +185,10 @@ TEACH_MODE_SPEED = 1
 
 class SixAxisRobot(object):
 
-    def __init__(self, controller, clock_rpi):
+    def __init__(self, controller):
         self.controller = controller
-        self.clock_rpi = clock_rpi
+        self.clock_rpi = controller.clock
+        self.__refresh_time__ = 0
         self.axis1 = SingleAxis(self.controller, 150, 600, 390, 0)  # Set
         self.axis2 = SingleAxis(self.controller, 230, 590, 500, 1)  # Set
         self.axis3 = SingleAxis(self.controller, 180, 550, 200, 2)  # Set
@@ -249,13 +227,14 @@ class SixAxisRobot(object):
     def main(self):
         exit_loop = False
         while exit_loop is False:
-            time.sleep(self.clock_rpi)
-            self.fcn_home()  # Request All Axis Home Command
-            self.manual_control()  # Monitor Manual Control Commands
-            # Always Keep This As Last Function For Main Loop
-            self.__update_all_axis__()
-            if keyboard.is_pressed('esc'):
-                exit_loop = True
+            if self.__refresh_time__ < time.time():
+                self.__refresh_time__ = time.time() + self.clock_rpi
+                self.fcn_home()  # Request All Axis Home Command
+                self.manual_control()  # Monitor Manual Control Commands
+                # Always Keep This As Last Function For Main Loop
+                self.__update_all_axis__()
+                if keyboard.is_pressed('esc'):
+                    exit_loop = True
         self.fcn_shutdown()  # Shutdown Axis On Exit Run
 
     # After Internal Scan, Scan Each Axis For Updates
@@ -297,92 +276,8 @@ class SixAxisRobot(object):
     def manual_control(self):
         self.UpdateAllAxisSpeeds(TEACH_MODE_SPEED)
         self.__keyboard_commands__()
+        self.__joy_commands__()
         return
-            # if keyboard.is_pressed('q'):
-            #     robot.axis1.req_position -= robot.axis1.speed
-            # elif keyboard.is_pressed('w'):
-            #     robot.axis1.req_position += robot.axis1.speed
-            #
-            # if keyboard.is_pressed('a'):
-            #     robot.axis2.req_position -= robot.axis2.speed
-            # elif keyboard.is_pressed('s'):
-            #     robot.axis2.req_position += robot.axis2.speed
-            #
-            # if keyboard.is_pressed('z'):
-            #     robot.axis3.req_position -= robot.axis3.speed
-            # elif keyboard.is_pressed('x'):
-            #     robot.axis3.req_position += robot.axis3.speed
-            #
-            # if keyboard.is_pressed('e'):
-            #     robot.axis4.req_position -= robot.axis4.speed
-            # elif keyboard.is_pressed('r'):
-            #     robot.axis4.req_position += robot.axis4.speed
-            #
-            # if keyboard.is_pressed('d'):
-            #     robot.axis5.req_position -= robot.axis5.speed
-            # elif keyboard.is_pressed('f'):
-            #     robot.axis5.req_position += robot.axis5.speed
-            #
-            # if keyboard.is_pressed('c'):
-            #     robot.axis6.req_position -= robot.axis6.speed
-            # elif keyboard.is_pressed('v'):
-            #     robot.axis6.req_position += robot.axis6.speed
-            #
-            # if keyboard.is_pressed('1'):
-            #     robot.gripper.req_position -= robot.gripper.speed
-            # elif keyboard.is_pressed('2'):
-            #     robot.gripper.req_position += robot.gripper.speed
-            #
-            # if controller.enable_joy:
-            #     left_stick = joy.leftStick()
-            #     right_stick = joy.rightStick()
-            #     joy_set, joy_set_ons = irox_tools.Toggle(joy_set, joy.Y(), joy_set_ons)
-            #     if joy_set:
-            #         robot.axis1.req_position += (int(left_stick[0] * robot.axis1.speed))
-            #         robot.axis2.req_position += (int(left_stick[1] * robot.axis2.speed))
-            #         robot.axis3.req_position += (int(right_stick[0] * robot.axis3.speed))
-            #         robot.axis4.req_position += (int(right_stick[1] * robot.axis4.speed))
-            #     if not joy_set:
-            #         robot.axis5.req_position += (int(left_stick[0] * robot.axis5.speed))
-            #         robot.axis6.req_position += (int(left_stick[1] * robot.axis6.speed))
-            #         robot.gripper.req_position += (int(right_stick[0] * robot.gripper.speed))
-            #
-            # if keyboard.is_pressed('0'):
-            #     print('Robot Current Axis Points: 1:{} 2:{} 3:{} 4:{} 5:{} 6:{} 7:{}'.format(a, b, c, d, e, f, g))
-            #
-            # if keyboard.is_pressed('h'):
-            #     print('########################################')
-            #     print('Send Robot To Home? [y]')
-            #     print('########################################')
-            #     response = input()
-            #     if response == ('y' or 'Y'):
-            #         HomeRobot(pwm, robot)
-            #
-            # if keyboard.is_pressed('t'):
-            #     print('########################################')
-            #     print('Enter Teach Mode? [y]')
-            #     print('########################################')
-            #     response = input()
-            #     if response == ('y' or 'Y'):
-            #         robot.teach_mode = True
-            #         print('########################################')
-            #         print('Enter Path Name:')
-            #         print('########################################')
-            #         name = input()
-            #         path = {
-            #             'Name': name,
-            #             'Path': [],
-            #         }
-            #         robot.paths.append(path)
-            #         robot.current_teach_path = name
-            #
-            # if robot.teach_mode:
-            #     PathTeaching(controller)
-            #
-            # if keyboard.is_pressed('esc'):
-            #     exit_manual = True
-            #
-            # UpdatePosition(controller)
 
     def __keyboard_commands__(self):
         # Axis 1
@@ -426,6 +321,22 @@ class SixAxisRobot(object):
             self.gripper.fcn_jog_forward()
         elif keyboard.is_pressed('y'):
             self.gripper.fcn_jog_reverse()
+
+    def __joy_commands__(self):
+        if self.controller.enable_joy:
+            left_stick = self.controller.joy.leftStick()
+            right_stick = self.controller.joy.rightStick()
+            print((left_stick[0]), (left_stick[1]))
+            if self.controller.joy.leftTrigger() < 0.5:
+                self.axis1.requested_position += (int(left_stick[0] * self.axis1.speed))
+                self.axis2.requested_position += (int(left_stick[1] * self.axis2.speed))
+                self.axis3.requested_position += (int(right_stick[0] * self.axis3.speed))
+                self.axis4.requested_position += (int(right_stick[1] * self.axis4.speed))
+            if self.controller.joy.leftTrigger() >= 0.5:
+                self.axis5.requested_position += (int(left_stick[0] * self.axis5.speed))
+                self.axis6.requested_position += (int(left_stick[1] * self.axis6.speed))
+                self.gripper.requested_position += (int(right_stick[0] * self.gripper.speed))
+
 
     # Static Method To Update SingleAxis Speed Reference
     @staticmethod
@@ -495,7 +406,7 @@ class SingleAxis(object):
     # Dwell Time To Allow Servo Time To Fully Move Into Position Before Defining Position
     # Then Redefine Current Position With Commanded Home Position
     def __fcn_home__(self):
-        self.controller.set_pwm(self.axis, 0, self.home_position)  # Set Controller Command For Current Position
+        self.controller.pwm.set_pwm(self.axis, 0, self.home_position)  # Set Controller Command For Current Position
         self.actual_position = self.requested_position = self.home_position
         time.sleep(1)  # Dwell Servo Motion
         self.__homed__ = True
@@ -505,7 +416,7 @@ class SingleAxis(object):
     # May Push Through Servo (There Are No Mechanical Brakes On This Device)
     # Setting Requested Position As 0 Sets Disabled For SUNFOUNDER SF0180 Servos
     def __fcn_shutdown__(self):
-        self.controller.set_pwm(self.axis, 0, 0)  # Set Controller Command For Current Position
+        self.controller.pwm.set_pwm(self.axis, 0, 0)  # Set Controller Command For Current Position
         time.sleep(1)  # Dwell Servo Motion
         self.actual_position = 0
         self.__homed__ = False
@@ -540,7 +451,7 @@ class SingleAxis(object):
             return
         self.busy = True
         self.actual_position = self.__calculate_pwm_offset__()  # Set Our Actual Position Before Moving To It
-        self.controller.set_pwm(self.axis, 0, self.actual_position)  # Set Controller Command For Current Position
+        self.controller.pwm.set_pwm(self.axis, 0, self.actual_position)  # Set Controller Command For Current Position
 
     def __calculate_pwm_offset__(self):
         position_offset = self.requested_position - self.actual_position
@@ -548,3 +459,6 @@ class SingleAxis(object):
             return self.actual_position + self.speed if position_offset > 0 else self.actual_position + self.speed*-1
         else:
             return self.actual_position + position_offset
+
+
+

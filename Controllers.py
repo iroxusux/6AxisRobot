@@ -44,7 +44,7 @@ class RaspberryPiController(object):
         print('Local Clock Update Frequency Set')
         self.clock = 0.01  # Set Internal Clock For Localized Update Speeds
         print('Robot Controller Driver Connected')
-        self.robot = SainSmartRobot.SixAxisRobot(self.pwm, self.clock)
+        self.robot = SainSmartRobot.SixAxisRobot(self)
         print('Running Robot...')
         self.RunRobot()
 
