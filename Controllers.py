@@ -42,7 +42,7 @@ class RaspberryPiController(object):
             print('Reboot Controller To Retry Connection')
 
         print('Local Clock Update Frequency Set')
-        self.clock = 0.01  # Set Internal Clock For Localized Update Speeds
+        self.clock = 0.05  # Set Internal Clock For Localized Update Speeds
         print('Robot Controller Driver Connected')
         self.robot = SainSmartRobot.SixAxisRobot(self)
         print('Running Robot...')
@@ -69,8 +69,6 @@ class RaspberryPiController(object):
                     return
 
     def RunRobot(self):
-        try:
-            if self.ok_to_run:
-                self.robot.main()
-        except KeyboardInterrupt:
-            self.CleanUpEnvironment()
+        if self.ok_to_run:
+            self.robot.main()
+        self.CleanUpEnvironment()

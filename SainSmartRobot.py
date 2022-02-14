@@ -46,70 +46,6 @@ def SelectPath(paths):
     return None
 
 
-def CompileDemoRoutine():
-    path = {
-        'Name': 'Demo Path',
-        'Path': [],
-    }
-    demo_speed = 10
-    demo_dwell = .1
-    point_data = (390, 500, 180, 390, 390, 390, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 500, 180, 390, 390, 390, 342)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 500, 180, 390, 390, 390, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 500, 180, 390, 390, 390, 342)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 500, 180, 390, 390, 390, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 380, 320, 390, 390, 390, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 380, 320, 390, 390, 390, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 380, 320, 410, 390, 589, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 380, 300, 370, 240, 169, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 310, 320, 370, 240, 169, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 310, 340, 370, 270, 169, 242)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 310, 340, 370, 270, 169, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 460, 180, 370, 270, 169, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 460, 180, 610, 190, 169, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 460, 180, 160, 180, 589, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (270, 290, 370, 160, 190, 589, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 410, 190, 380, 360, 589, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (550, 250, 420, 170, 180, 147, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 410, 190, 380, 360, 589, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 310, 340, 370, 270, 169, 340)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 310, 340, 370, 270, 169, 242)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (380, 310, 320, 370, 240, 169, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 380, 300, 370, 240, 169, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 380, 320, 410, 390, 589, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 380, 320, 390, 390, 390, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 380, 320, 390, 390, 390, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    point_data = (390, 500, 180, 390, 390, 390, 195)  # Set
-    path['Path'].append(AssembleTeachPoint(point_data, demo_speed, demo_dwell))
-    return path
-
-
 def PathTeaching(controller):
     robot = controller.selected_robot
     if robot.teach_mode:
@@ -176,11 +112,7 @@ def OscillateJoint(pwm, joint, origin, min_sweep, max_sweep, rate):
     print('########################################')
 
 
-def AssembleTeachPoint(point_data, speed, dwell_time):
-    return (speed, dwell_time, point_data)
-
-
-TEACH_MODE_SPEED = 1
+TEACH_MODE_SPEED = 10
 
 
 class SixAxisRobot(object):
@@ -190,15 +122,21 @@ class SixAxisRobot(object):
         self.clock_rpi = controller.clock
         self.__refresh_time__ = 0
         self.axis1 = SingleAxis(self.controller, 150, 600, 390, 0)  # Set
-        self.axis2 = SingleAxis(self.controller, 230, 590, 500, 1)  # Set
+        self.axis2 = SingleAxis(self.controller, 230, 590, 520, 1)  # Set
         self.axis3 = SingleAxis(self.controller, 180, 550, 200, 2)  # Set
-        self.axis4 = SingleAxis(self.controller, 160, 610, 390, 3)  # Set
-        self.axis5 = SingleAxis(self.controller, 150, 500, 390, 4)  # Set
-        self.axis6 = SingleAxis(self.controller, 147, 589, 390, 5)  # Set
-        self.gripper = SingleAxis(self.controller, 195, 342, 200, 6)
+        self.axis4 = SingleAxis(self.controller, 160, 610, 380, 3)  # Set
+        self.axis5 = SingleAxis(self.controller, 150, 500, 200, 4)  # Set
+        self.axis6 = SingleAxis(self.controller, 147, 589, 385, 5)  # Set
+        self.gripper = SingleAxis(self.controller, 195, 342, 290, 6)
         self.teach_mode = False
+        # Robot Path Data
         self.paths = []
-        self.current_teach_path = ''
+        self.paths.append(self.__compile_demo__())
+        self.__loaded_path__: 'RobotPath' = None
+        self.__executing_path__ = False
+        self.__path_complete__ = False
+        self.__current_step_complete__ = False
+        self.__path_step__ = 0
 
     @property
     def homed(self):
@@ -231,10 +169,14 @@ class SixAxisRobot(object):
                 self.__refresh_time__ = time.time() + self.clock_rpi
                 self.fcn_home()  # Request All Axis Home Command
                 self.manual_control()  # Monitor Manual Control Commands
+                self.__run_routine__()  # Monitor Loaded Routine Commands
                 # Always Keep This As Last Function For Main Loop
                 self.__update_all_axis__()
                 if keyboard.is_pressed('esc'):
                     exit_loop = True
+                if keyboard.is_pressed('p'):  # Temp For Demo Purposes
+                    self.__load_path__('Demo_Routine')
+                    self.__executing_path__ = True
         self.fcn_shutdown()  # Shutdown Axis On Exit Run
 
     # After Internal Scan, Scan Each Axis For Updates
@@ -246,6 +188,7 @@ class SixAxisRobot(object):
         self.axis5.main_loop()
         self.axis6.main_loop()
         self.gripper.main_loop()
+        print(self.axis1.actual_position, self.axis2.actual_position, self.axis3.actual_position, self.axis4.actual_position, self.axis5.actual_position, self.axis6.actual_position, self.gripper.actual_position)
 
     # Set Home Position On Robot
     # All Servo Axis Will Move To Predefined Home Position And Register Position To Home Value
@@ -264,7 +207,7 @@ class SixAxisRobot(object):
     # Unexpected Motion May Occur As Physical Weight Of Robot
     # May Push Through Servos (There Are No Mechanical Brakes On This Device)
     def fcn_shutdown(self):
-        self.UpdateAllAxisSpeeds(0)
+        self.__update_all_axis_speeds__(0)
         self.axis1.request_shutdown
         self.axis2.request_shutdown
         self.axis3.request_shutdown
@@ -274,7 +217,9 @@ class SixAxisRobot(object):
         self.gripper.request_shutdown
 
     def manual_control(self):
-        self.UpdateAllAxisSpeeds(TEACH_MODE_SPEED)
+        if self.__executing_path__ is True:  # Do Not Allow Manual Motion While Path Is In Motion (depricate this when modes are introduced***)
+            return
+        self.__update_all_axis_speeds__(TEACH_MODE_SPEED)
         self.__keyboard_commands__()
         self.__joy_commands__()
         return
@@ -326,32 +271,116 @@ class SixAxisRobot(object):
         if self.controller.enable_joy:
             left_stick = self.controller.joy.leftStick()
             right_stick = self.controller.joy.rightStick()
-            print((left_stick[0]), (left_stick[1]))
-            if self.controller.joy.leftTrigger() < 0.5:
+            if self.controller.joy.leftTrigger() <= 0.01:
                 self.axis1.requested_position += (int(left_stick[0] * self.axis1.speed))
                 self.axis2.requested_position += (int(left_stick[1] * self.axis2.speed))
                 self.axis3.requested_position += (int(right_stick[0] * self.axis3.speed))
                 self.axis4.requested_position += (int(right_stick[1] * self.axis4.speed))
-            if self.controller.joy.leftTrigger() >= 0.5:
+            if self.controller.joy.leftTrigger() >= 0.01:
                 self.axis5.requested_position += (int(left_stick[0] * self.axis5.speed))
                 self.axis6.requested_position += (int(left_stick[1] * self.axis6.speed))
                 self.gripper.requested_position += (int(right_stick[0] * self.gripper.speed))
 
+    @staticmethod
+    def __compile_demo__():
+        demo_path = RobotPath('Demo_Routine')  # Create Demo Path Object
+        demo_speed = 25  # Set Constant For Speeds
+        demo_dwell = 0.1  # Set Constant For Command Dwells
+        demo_path.add_point(390, 500, 180, 390, 390, 390, 195, demo_speed, demo_dwell)
+        demo_path.add_point(390, 500, 180, 390, 390, 390, 342, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 500, 180, 390, 390, 390, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 500, 180, 390, 390, 390, 342, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 500, 180, 390, 390, 390, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 380, 320, 390, 390, 390, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 380, 320, 390, 390, 390, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 380, 320, 410, 390, 589, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 380, 300, 370, 240, 169, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 310, 320, 370, 240, 169, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 310, 340, 370, 270, 169, 242, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 310, 340, 370, 270, 169, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 460, 180, 370, 270, 169, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 460, 180, 610, 190, 169, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 460, 180, 160, 180, 589, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(270, 290, 370, 160, 190, 589, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 410, 190, 380, 360, 589, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(550, 250, 420, 170, 180, 147, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 410, 190, 380, 360, 589, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 310, 340, 370, 270, 169, 340, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 310, 340, 370, 270, 169, 242, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(380, 310, 320, 370, 240, 169, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 380, 300, 370, 240, 169, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 380, 320, 410, 390, 589, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 380, 320, 390, 390, 390, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 380, 320, 390, 390, 390, 195, demo_speed, demo_dwell)  # Set
+        demo_path.add_point(390, 500, 180, 390, 390, 390, 195, demo_speed, demo_dwell)  # Set
+        return demo_path
 
     # Static Method To Update SingleAxis Speed Reference
     @staticmethod
-    def UpdateAxisSpeed(axis: "SingleAxis", speed: "int"):
+    def __update_axis_speed__(axis: "SingleAxis", speed: "int"):
         axis.speed = speed
 
     # Update All Axis Speed References
-    def UpdateAllAxisSpeeds(self, speed):
-        self.UpdateAxisSpeed(self.axis1, speed)
-        self.UpdateAxisSpeed(self.axis2, speed)
-        self.UpdateAxisSpeed(self.axis3, speed)
-        self.UpdateAxisSpeed(self.axis4, speed)
-        self.UpdateAxisSpeed(self.axis5, speed)
-        self.UpdateAxisSpeed(self.axis6, speed)
-        self.UpdateAxisSpeed(self.gripper, speed)
+    def __update_all_axis_speeds__(self, speed):
+        self.__update_axis_speed__(self.axis1, speed)
+        self.__update_axis_speed__(self.axis2, speed)
+        self.__update_axis_speed__(self.axis3, speed)
+        self.__update_axis_speed__(self.axis4, speed)
+        self.__update_axis_speed__(self.axis5, speed)
+        self.__update_axis_speed__(self.axis6, speed)
+        self.__update_axis_speed__(self.gripper, speed)
+
+    def __load_path__(self, path_by_name: 'str'):
+        if self.__executing_path__ is True or self.__loaded_path__ is not None:  # Robot Currently Has Something In Memory, Do Not Load A New Path
+            return
+        for i in self.paths:
+            if i.name == path_by_name:
+                self.__loaded_path__ = i
+
+    def __run_routine__(self):
+        if self.__loaded_path__ is None or self.__executing_path__ is False:
+            return
+        self.__examine_step_status__()
+        self.__examine_routine_status__()
+        self.__assert_step__()
+
+    def __examine_step_status__(self):
+        if self.__loaded_path__ is None:
+            self.__current_step_complete__ = False
+            return
+        if (self.axis1.actual_position == self.__loaded_path__.point[self.__path_step__].axis1 and
+            self.axis2.actual_position == self.__loaded_path__.point[self.__path_step__].axis2 and
+            self.axis3.actual_position == self.__loaded_path__.point[self.__path_step__].axis3 and
+            self.axis4.actual_position == self.__loaded_path__.point[self.__path_step__].axis4 and
+            self.axis5.actual_position == self.__loaded_path__.point[self.__path_step__].axis5 and
+            self.axis6.actual_position == self.__loaded_path__.point[self.__path_step__].axis6 and
+            self.gripper.actual_position == self.__loaded_path__.point[self.__path_step__].gripper):
+            self.__current_step_complete__ = True
+
+    def __examine_routine_status__(self):
+        if self.__current_step_complete__ is False:
+            return
+        if self.__current_step_complete__ is True:
+            self.__current_step_complete__ = False
+            self.__path_step__ += 1
+        if len(self.__loaded_path__.point) == self.__path_step__:
+            self.__executing_path__ = False
+
+    def __assert_step__(self):
+        if self.__executing_path__ is False:
+            return
+        self.__update_all_axis_speeds__(self.__loaded_path__.point[self.__path_step__].speed_setpoint)
+        self.axis1.requested_position = self.__loaded_path__.point[self.__path_step__].axis1
+        self.axis2.requested_position = self.__loaded_path__.point[self.__path_step__].axis2
+        self.axis3.requested_position = self.__loaded_path__.point[self.__path_step__].axis3
+        self.axis4.requested_position = self.__loaded_path__.point[self.__path_step__].axis4
+        self.axis5.requested_position = self.__loaded_path__.point[self.__path_step__].axis5
+        self.axis6.requested_position = self.__loaded_path__.point[self.__path_step__].axis6
+        self.gripper.requested_position = self.__loaded_path__.point[self.__path_step__].gripper
+
+    def __unload_path__(self):
+        if self.__executing_path__ is False and self.__path_complete__ is True:
+            self.__loaded_path__ = None
 
 
 class SingleAxis(object):
@@ -406,6 +435,7 @@ class SingleAxis(object):
     # Dwell Time To Allow Servo Time To Fully Move Into Position Before Defining Position
     # Then Redefine Current Position With Commanded Home Position
     def __fcn_home__(self):
+        print(f'Homing Axis: {self.axis}')
         self.controller.pwm.set_pwm(self.axis, 0, self.home_position)  # Set Controller Command For Current Position
         self.actual_position = self.requested_position = self.home_position
         time.sleep(1)  # Dwell Servo Motion
@@ -461,4 +491,26 @@ class SingleAxis(object):
             return self.actual_position + position_offset
 
 
+# Helper Class To Make Data Sets Easily Readable
+class RobotPath(object):
+    def __init__(self, name: 'String'):
+        self.name = name
+        self.point = []
+        
+    # Pass-Through Function To Append Class To Robot Path
+    def add_point(self, axis1=0, axis2=0, axis3=0, axis4=0, axis5=0, axis6=0, gripper=0, speed_setpoint=0, command_dwell=0):
+        self.point.append(RobotPathSinglePoint(axis1, axis2, axis3, axis4, axis5, axis6, gripper, speed_setpoint, command_dwell))
 
+
+# Helper Class To Make Data Sets Easily Readable
+class RobotPathSinglePoint:
+    def __init__(self, axis1=0, axis2=0, axis3=0, axis4=0, axis5=0, axis6=0, gripper=0, speed_setpoint=0, command_dwell=0):
+        self.axis1 = axis1
+        self.axis2 = axis2
+        self.axis3 = axis3
+        self.axis4 = axis4
+        self.axis5 = axis5
+        self.axis6 = axis6
+        self.gripper = gripper
+        self.speed_setpoint = speed_setpoint
+        self.command_dwell = command_dwell
